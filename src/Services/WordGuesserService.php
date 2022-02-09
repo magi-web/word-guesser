@@ -57,13 +57,50 @@ class WordGuesserService
 
             if (false === $this->containsMisplacedLetters($word, $misplacedLetters)
                 && false !== ($letters = $this->wordMatchesThePattern($word, $pattern))
-                && array_intersect($included, $letters) === $included
-                && array_intersect($excluded, $letters) === []
+                && $this->array_intersect($included, $letters) === $included
+                && $this->array_intersect($excluded, $this->array_diff($letters, $included)) === []
             ) {
                 $words[] = $word;
             }
         }
         return $words;
+    }
+
+    /**
+     * My own array_intersect method that handles arrays with duplicate values in $array1
+     *
+     * @param array $array1
+     * @param array $array2
+     * @return array
+     */
+    private function array_intersect(array $array1, array $array2): array
+    {
+        $result = [];
+        foreach ($array1 as $val) {
+            if (($key = array_search($val, $array2, TRUE))!==false) {
+                $result[] = $val;
+                unset($array2[$key]);
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * @param array $array1
+     * @param array $array2
+     * @return array
+     */
+    private function array_diff(array $array1, array $array2): array
+    {
+        $result = [];
+        foreach ($array1 as $val) {
+            if (($key = array_search($val, $array2, TRUE))!==false) {
+                unset($array2[$key]);
+            } else {
+                $result[] = $val;
+            }
+        }
+        return $result;
     }
 
     private function containsMisplacedLetters(string $word, ?array $misplacedLetters): bool
